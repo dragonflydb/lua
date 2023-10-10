@@ -737,7 +737,7 @@
 ** (It must fit into max(size_t)/32 and max(int)/2.)
 */
 #if LUAI_IS32INT
-#define LUAI_MAXSTACK		1000000
+#define LUAI_MAXSTACK		8192
 #else
 #define LUAI_MAXSTACK		15000
 #endif

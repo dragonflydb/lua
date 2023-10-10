@@ -70,13 +70,26 @@ LOCAL = $(TESTS) $(CWARNS)
 
 
 # enable Linux goodies
-MYCFLAGS= $(LOCAL) -std=c99 -DLUA_USE_LINUX -DLUA_USE_READLINE
-MYLDFLAGS= $(LOCAL) -Wl,-E
-MYLIBS= -ldl -lreadline
+MYCFLAGS= $(LOCAL) -std=c99 -g -DLUA_USE_LINUX
+# Commenting out dynamic linking flags because we link statically
+# and this does not work on MacOS: MYLDFLAGS= $(LOCAL) -Wl,-E
+MYLIBS= -ldl
 
+uname_m := $(shell uname -m)
+
+# equivalent to: if $(uname_m) == x86_64 || $(uname_m) == amd64
+ifneq (, $(filter $(uname_m),x86_64 amd64))
+OPTFLAGS= -march=sandybridge
+else ifneq (, $(filter $(uname_m),aarch64 arm64))
+OPTFLAGS= -march=armv8.2-a+fp16+rcpc+dotprod+crypto
+else ifeq ($(uname_m), s390x)
+OPTFLAGS= -march=native
+else
+  $(error ERROR: unknown architecture $(uname_m))
+endif
 
 CC= gcc
-CFLAGS= -Wall -O2 $(MYCFLAGS) -fno-stack-protector -fno-common -march=native
+CFLAGS= -Wall -O2 $(MYCFLAGS) -fno-stack-protector -fno-common $(OPTFLAGS)
 AR= ar rc
 RANLIB= ranlib
 RM= rm -f
