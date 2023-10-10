@@ -565,9 +565,10 @@ int luaV_lessequal (lua_State *L, const TValue *l, const TValue *r) {
 int luaV_equalobj (lua_State *L, const TValue *t1, const TValue *t2) {
   const TValue *tm;
   if (ttypetag(t1) != ttypetag(t2)) {  /* not the same variant? */
-    if (ttype(t1) != ttype(t2) || ttype(t1) != LUA_TNUMBER)
-      return 0;  /* only numbers can be equal with different variants */
-    else {  /* two numbers with different variants */
+    if (ttype(t1) != ttype(t2))
+      return 0;
+
+    if (ttype(t1) == LUA_TNUMBER) { /* two numbers with different variants */
       /* One of them is an integer. If the other does not have an
          integer value, they cannot be equal; otherwise, compare their
          integer values. */
@@ -576,6 +577,11 @@ int luaV_equalobj (lua_State *L, const TValue *t1, const TValue *t2) {
               luaV_tointegerns(t2, &i2, F2Ieq) &&
               i1 == i2);
     }
+    if (ttype(t1) == LUA_TSTRING) {
+      /* two strings with different variants */
+      return luaS_eqstr(tsvalue(t1), tsvalue(t2));
+    }
+    return 0;
   }
   /* values have same type and same variant */
   switch (ttypetag(t1)) {
