@@ -550,6 +550,21 @@ LUA_API const char *lua_pushlongstring (lua_State *L, const char *s, size_t len)
   return getstr(ts);
 }
 
+LUA_API const char *lua_pushrefstring (lua_State *L, char *s, size_t len) {
+  TString *ts;
+  lua_lock(L);
+  if (len <= 4) {
+    ts = luaS_newlstr(L, s, len);
+  } else {
+    ts = luaS_createstringref(L, s, len);    
+  }
+  setsvalue2s(L, L->top.p, ts);
+  api_incr_top(L);  
+  lua_unlock(L);
+  return s;
+}
+
+
 LUA_API const char *lua_pushstring (lua_State *L, const char *s) {
   lua_lock(L);
   if (s == NULL)

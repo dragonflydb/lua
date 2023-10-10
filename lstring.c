@@ -178,6 +178,19 @@ TString *luaS_createlngstrobj (lua_State *L, size_t l) {
   return ts;
 }
 
+LUAI_FUNC TString *luaS_createstringref (lua_State *L, char* str, size_t len) {
+  const size_t totalsize = offsetof(TString, contents) + 4;
+  GCObject *o = luaC_newobj(L, LUA_VSTRREF, totalsize);
+  TString *ts = gco2ts(o);
+  uint32_t len32 = len;
+  
+  ts->hash = G(L)->seed;
+  ts->extra = 0;
+  ts->u.str = str;
+  
+  memcpy(ts->contents, &len32, 4);
+  return ts;
+}
 
 void luaS_remove (lua_State *L, TString *ts) {
   stringtable *tb = &G(L)->strt;
