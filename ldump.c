@@ -125,8 +125,11 @@ static void dumpConstants (DumpState *D, const Proto *f) {
         dumpInteger(D, ivalue(o));
         break;
       case LUA_VSHRSTR:
-      case LUA_VLNGSTR:
+      case LUA_VLNGSTR:      
         dumpString(D, tsvalue(o));
+        break;
+      case LUA_VREFSTR:
+        lua_assert(0);
         break;
       default:
         lua_assert(tt == LUA_VNIL || tt == LUA_VFALSE || tt == LUA_VTRUE);

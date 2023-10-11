@@ -707,8 +707,10 @@ static void const2exp (TValue *v, expdesc *e) {
       e->k = VNIL;
       break;
     case LUA_VSHRSTR:  case LUA_VLNGSTR:
-      e->k = VKSTR; e->u.strval = tsvalue(v);
+    case LUA_VREFSTR:
+      e->k = VKSTR; e->u.strval = tsvalue(v);      
       break;
+
     default: lua_assert(0);
   }
 }

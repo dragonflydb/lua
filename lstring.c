@@ -33,7 +33,7 @@
 */
 int luaS_eqlngstr (TString *a, TString *b) {
   size_t len = a->u.lnglen;
-  lua_assert(a->tt == LUA_VLNGSTR && b->tt == LUA_VLNGSTR);
+  lua_assert(a->tt == b->tt && (a->tt== LUA_VLNGSTR || a->tt == LUA_VREFSTR));
   return (a == b) ||  /* same instance or... */
     ((len == b->u.lnglen) &&  /* equal length and ... */
      (memcmp(getstr(a), getstr(b), len) == 0));  /* equal contents */
@@ -41,19 +41,20 @@ int luaS_eqlngstr (TString *a, TString *b) {
 
 /* equality for strings with differrent variants */
 int luaS_eqstr (TString *a, TString *b) {
-  size_t len;
+  size_t len = a->u.lnglen;
   lua_assert(a->tt != b->tt);
 
   if (b->tt == LUA_VSHRSTR) {
-    if (b->shrlen != a->u.lnglen) {
+    if (b->shrlen != len) {
       return 0;
-    }
-    len = b->shrlen;
-  } else {
+    }    
+  } else if (a->tt == LUA_VSHRSTR) {
     if (a->shrlen != b->u.lnglen) {
       return 0;
     }
     len = a->shrlen;
+  } else if (len != b->u.lnglen) {
+    return 0;
   }
   return memcmp(getstr(a), getstr(b), len) == 0;
 }
@@ -67,7 +68,7 @@ unsigned int luaS_hash (const char *str, size_t l, unsigned int seed) {
 
 
 unsigned int luaS_hashlongstr (TString *ts) {
-  lua_assert(ts->tt == LUA_VLNGSTR);
+  lua_assert(ts->tt == LUA_VLNGSTR || ts->tt == LUA_VREFSTR);
   if (ts->extra == 0) {  /* no hash? */
     size_t len = ts->u.lnglen;
     ts->hash = luaS_hash(getstr(ts), len, ts->hash);
@@ -179,16 +180,15 @@ TString *luaS_createlngstrobj (lua_State *L, size_t l) {
 }
 
 LUAI_FUNC TString *luaS_createstringref (lua_State *L, char* str, size_t len) {
-  const size_t totalsize = offsetof(TString, contents) + 4;
-  GCObject *o = luaC_newobj(L, LUA_VSTRREF, totalsize);
+  const size_t totalsize = sizerefstring;
+  GCObject *o = luaC_newobj(L, LUA_VREFSTR, totalsize);
   TString *ts = gco2ts(o);
-  uint32_t len32 = len;
   
   ts->hash = G(L)->seed;
   ts->extra = 0;
-  ts->u.str = str;
+  ts->u.lnglen = len;
   
-  memcpy(ts->contents, &len32, 4);
+  memcpy(ts->contents, &str, sizeof(str));
   return ts;
 }
 

@@ -359,11 +359,11 @@ typedef struct GCObject {
 /* Variant tags for strings */
 #define LUA_VSHRSTR	makevariant(LUA_TSTRING, 0)  /* short strings */
 #define LUA_VLNGSTR	makevariant(LUA_TSTRING, 1)  /* long strings */
-#define LUA_VSTRREF  makevariant(LUA_TSTRING, 2)  /* long strings */
+#define LUA_VREFSTR makevariant(LUA_TSTRING, 2)  /* long strings */
 
 #define ttisstring(o)		checktype((o), LUA_TSTRING)
 #define ttisshrstring(o)	checktag((o), ctb(LUA_VSHRSTR))
-#define ttislngstring(o)	checktag((o), ctb(LUA_VLNGSTR))
+// #define ttislngstring(o)	checktag((o), ctb(LUA_VLNGSTR))
 
 #define tsvalueraw(v)	(gco2ts((v).gc))
 
@@ -392,7 +392,6 @@ typedef struct TString {
   union {
     size_t lnglen;  /* length for long strings */
     struct TString *hnext;  /* linked list for hash table */
-    char           *str; /* pointer to reference */
   } u;
   char contents[1];
 } TString;
@@ -402,7 +401,9 @@ typedef struct TString {
 /*
 ** Get the actual string (array of bytes) from a 'TString'.
 */
-#define getstr(ts)  ((ts)->contents)
+#define getstr(ts)  ({char* res = (char*)(ts)->contents; \
+                      if ((ts)->tt == LUA_VREFSTR) res = *(char**)res; \
+                      res; })
 
 
 /* get the actual string (array of bytes) from a Lua value */

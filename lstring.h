@@ -24,6 +24,7 @@
 ** itself (including final '\0').
 */
 #define sizelstring(l)  (offsetof(TString, contents) + ((l) + 1) * sizeof(char))
+#define sizerefstring   (offsetof(TString, contents) + sizeof(char*))
 
 #define luaS_newliteral(L, s)	(luaS_newlstr(L, "" s, \
                                  (sizeof(s)/sizeof(char))-1))

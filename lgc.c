@@ -297,6 +297,7 @@ GCObject *luaC_newobj (lua_State *L, int tt, size_t sz) {
 static void reallymarkobject (global_State *g, GCObject *o) {
   switch (o->tt) {
     case LUA_VSHRSTR:
+    case LUA_VREFSTR:
     case LUA_VLNGSTR: {
       set2black(o);  /* nothing to visit */
       break;
@@ -806,6 +807,10 @@ static void freeobj (lua_State *L, GCObject *o) {
       TString *ts = gco2ts(o);
       luaM_freemem(L, ts, sizelstring(ts->u.lnglen));
       break;
+    }
+    case LUA_VREFSTR: {
+      TString *ts = gco2ts(o);
+      luaM_freemem(L, ts, sizerefstring);
     }
     default: lua_assert(0);
   }

@@ -427,7 +427,8 @@ LUA_API lua_Unsigned lua_rawlen (lua_State *L, int idx) {
   const TValue *o = index2value(L, idx);
   switch (ttypetag(o)) {
     case LUA_VSHRSTR: return tsvalue(o)->shrlen;
-    case LUA_VLNGSTR: return tsvalue(o)->u.lnglen;
+    case LUA_VLNGSTR: 
+    case LUA_VREFSTR: return tsvalue(o)->u.lnglen;    
     case LUA_VUSERDATA: return uvalue(o)->len;
     case LUA_VTABLE: return luaH_getn(hvalue(o));
     default: return 0;
